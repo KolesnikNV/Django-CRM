@@ -15,10 +15,9 @@ urlpatterns = [
         jwt_views.TokenRefreshView.as_view(),
         name="token_refresh",
     ),
-    # GoogleLoginView
     path("auth/google/", views.GoogleLoginView.as_view()),
     path("auth/create-org/", views.OrgProfileCreateView.as_view()),
-    # path("auth/companies-list/", views.OrganizationListView.as_view()),
+    path("auth/companies-list/", views.OrganizationListView.as_view()),
     path("profile/", views.ProfileView.as_view()),
     path("users/get-teams-and-users/", views.GetTeamsAndUsersView.as_view()),
     path("profile/change-password/", views.ChangePasswordView.as_view()),
@@ -39,5 +38,4 @@ urlpatterns = [
     path("api-settings/", views.DomainList.as_view()),
     path("api-settings/<int:pk>/", views.DomainDetailView.as_view()),
     path("users/<int:pk>/status/", views.UserStatusView.as_view()),
-    # path("delete_users/", views.UsersDelete.as_view())
 ]

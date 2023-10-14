@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("contacts", "0002_auto_20190212_1334"),
         ("leads", "0003_auto_20190211_1142"),

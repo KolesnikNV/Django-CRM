@@ -1,7 +1,6 @@
 from celery import Celery
-from django.conf import settings
 from django.core.mail import EmailMessage
-from django.shortcuts import reverse
+from django.shortcuts import reversed
 from django.template.loader import render_to_string
 
 from common.models import User
@@ -28,7 +27,7 @@ def send_email(invoice_id, recipients, domain="demo.django-crm.io", protocol="ht
                 protocol
                 + "://"
                 + domain
-                + reverse("invoices:invoice_details", args=(invoice.id,))
+                + reversed("invoices:invoice_details", args=(invoice.id,))
             )
 
             context["user"] = user
@@ -49,7 +48,7 @@ def send_email(invoice_id, recipients, domain="demo.django-crm.io", protocol="ht
             protocol
             + "://"
             + domain
-            + reverse("invoices:invoice_details", args=(invoice.id,))
+            + reversed("invoices:invoice_details", args=(invoice.id,))
         )
         for recipient in recipients:
             context["user"] = recipient.email
@@ -79,7 +78,7 @@ def send_invoice_email(invoice_id, domain="demo.django-crm.io", protocol="http")
             protocol
             + "://"
             + domain
-            + reverse("invoices:invoice_details", args=(invoice.id,))
+            + reversed("invoices:invoice_details", args=(invoice.id,))
         )
         html_content = render_to_string("invoice_detail_email.html", context=context)
         msg = EmailMessage(subject=subject, body=html_content, to=recipients)
@@ -99,7 +98,7 @@ def send_invoice_email_cancel(invoice_id, domain="demo.django-crm.io", protocol=
             protocol
             + "://"
             + domain
-            + reverse("invoices:invoice_details", args=(invoice.id,))
+            + reversed("invoices:invoice_details", args=(invoice.id,))
         )
         html_content = render_to_string("invoice_cancelled.html", context=context)
         msg = EmailMessage(subject=subject, body=html_content, to=recipients)

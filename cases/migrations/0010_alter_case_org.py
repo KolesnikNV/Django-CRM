@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("common", "0037_alter_profile_org"),
         ("cases", "0009_rename_company_case_org"),

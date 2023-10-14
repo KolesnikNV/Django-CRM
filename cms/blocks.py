@@ -1,13 +1,6 @@
-from django.db import models
-from modelcluster.models import ClusterableModel
-from wagtail.blocks import CharBlock, ListBlock, RichTextBlock, TextBlock
+from wagtail.blocks import CharBlock, RichTextBlock, TextBlock
 from wagtail.core import blocks
-from wagtail.core.blocks import StructBlock
-from wagtail.core.models import Orderable
-from wagtail.fields import RichTextField
 from wagtail.images.blocks import ImageChooserBlock
-from wagtail.snippets.blocks import SnippetChooserBlock
-from wagtail.snippets.models import register_snippet
 
 
 class RightImageLeftText(blocks.StructBlock):

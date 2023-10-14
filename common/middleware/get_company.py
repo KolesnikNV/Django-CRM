@@ -1,7 +1,6 @@
 import jwt
 from django.conf import settings
 from django.contrib.auth import logout
-from django.core.exceptions import ValidationError
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -9,7 +8,6 @@ from common.models import Org, Profile, User
 
 
 def set_profile_request(request, org, token):
-    # we are decoding the token
     decoded = jwt.decode(token, (settings.SECRET_KEY), algorithms=[settings.JWT_ALGO])
 
     request.user = User.objects.get(id=decoded["user_id"])
@@ -37,7 +35,6 @@ class GetProfileAndOrg(object):
         return self.get_response(request)
 
     def process_request(self, request):
-
         # here I am getting the the jwt token passing in header
         if request.headers.get("Authorization"):
             token1 = request.headers.get("Authorization")

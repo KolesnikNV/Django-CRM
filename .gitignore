@@ -25,3 +25,6 @@ media
 server.log
 .vscode
 staticfiles
+__pycache__
+.pytest_cache
+.vscode

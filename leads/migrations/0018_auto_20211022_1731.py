@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("common", "0037_alter_profile_org"),
         ("leads", "0017_alter_lead_org"),

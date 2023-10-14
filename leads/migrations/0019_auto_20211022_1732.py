@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("common", "0037_alter_profile_org"),
         ("leads", "0018_auto_20211022_1731"),

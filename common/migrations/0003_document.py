@@ -8,7 +8,6 @@ import common.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("common", "0002_auto_20190128_1237"),
     ]

@@ -8,7 +8,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from common import utils
 from common.models import Org, Profile
 from common.utils import COUNTRIES, INDCHOICES
-from contacts.models import Contact
+from contacts.models import Address, Contact
 from teams.models import Teams
 
 
@@ -22,7 +22,6 @@ class Tags(models.Model):
 
 
 class Account(models.Model):
-
     ACCOUNT_STATUS_CHOICE = (("open", "Open"), ("close", "Close"))
 
     name = models.CharField(pgettext_lazy("Name of Account", "Name"), max_length=64)
@@ -31,10 +30,20 @@ class Account(models.Model):
     industry = models.CharField(
         _("Industry Type"), max_length=255, choices=INDCHOICES, blank=True, null=True
     )
-    # billing_address = models.ForeignKey(
-    #     Address, related_name='account_billing_address', on_delete=models.CASCADE, blank=True, null=True)
-    # shipping_address = models.ForeignKey(
-    #     Address, related_name='account_shipping_address', on_delete=models.CASCADE, blank=True, null=True)
+    billing_address = models.ForeignKey(
+        Address,
+        related_name="account_billing_address",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+    shipping_address = models.ForeignKey(
+        Address,
+        related_name="account_shipping_address",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
     billing_address_line = models.CharField(
         _("Address"), max_length=255, blank=True, null=True
     )

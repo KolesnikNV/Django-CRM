@@ -13,6 +13,7 @@ from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
+app_name = "crm"
 openapi_info = openapi.Info(
     title="Crm API",
     default_version="v1",
@@ -24,10 +25,6 @@ schema_view = get_schema_view(
     url=settings.SWAGGER_ROOT_URL,
     permission_classes=(permissions.AllowAny,),
 )
-
-
-app_name = "crm"
-
 urlpatterns = [
     url(
         r"^healthz/$",
@@ -51,17 +48,16 @@ urlpatterns = [
     path(
         "logout/", views.LogoutView.as_view(), {"next_page": "/login/"}, name="logout"
     ),
-    path('admin/', include(wagtailadmin_urls)),
-    path('documents/', include(wagtaildocs_urls)),
-    path('', include(wagtail_urls))
-
+    path("admin/", include(wagtailadmin_urls)),
+    path("documents/", include(wagtaildocs_urls)),
+    path("", include(wagtail_urls)),
 ]
 
 
 if settings.DEBUG:
     from django.conf.urls.static import static
     from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-    
+
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

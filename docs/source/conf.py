@@ -12,11 +12,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-from recommonmark.parser import CommonMarkParser
-
-source_parsers = {
-    ".md": CommonMarkParser,
-}
 
 
 # If extensions (or modules to document with autodoc) are in another directory,

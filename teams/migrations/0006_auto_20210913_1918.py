@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("common", "0034_auto_20210913_1918"),
         ("teams", "0005_remove_teams_company"),

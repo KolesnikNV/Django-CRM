@@ -9,7 +9,6 @@ from teams.models import Teams
 
 
 class Task(models.Model):
-
     STATUS_CHOICES = (
         ("New", "New"),
         ("In Progress", "In Progress"),

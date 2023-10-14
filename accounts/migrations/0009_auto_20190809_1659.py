@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("contacts", "0003_merge_20190214_1427"),
         ("accounts", "0008_account_assigned_to"),

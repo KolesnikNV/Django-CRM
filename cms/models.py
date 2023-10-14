@@ -1,26 +1,24 @@
+import kwargs
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import models
+from django.shortcuts import render
 from django.utils.translation import gettext_lazy as _
-from django_extensions.db.fields import AutoSlugField
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
 from wagtail.admin.edit_handlers import (FieldPanel, InlinePanel,
                                          MultiFieldPanel, PageChooserPanel)
+from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
 from wagtail.core import blocks
 from wagtail.core.fields import StreamField
 from wagtail.core.models import Orderable, Page
-from wagtail.images.edit_handlers import ImageChooserPanel
-from wagtail.snippets.models import register_snippet
-from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 from wagtail.fields import RichTextField
-from django.shortcuts import render
+from wagtail.snippets.models import register_snippet
 
 from cms import blocks
 
 
 class HomePage(Page):
-
     content = StreamField(
         [
             ("right_image_left_content", blocks.RightImageLeftText()),
@@ -40,23 +38,23 @@ class HomePage(Page):
     content_panels = Page.content_panels + [FieldPanel("content")]
 
 
-# class BlogCategory(models.Model):
-#     name = models.CharField(max_length=255)
-#     slug = models.SlugField(max_length=255)
+class BlogCategory(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255)
 
-#     def __str__(self):
-#         return self.name
+    def __str__(self):
+        return self.name
 
-#     panels = [FieldPanel("name"), FieldPanel("slug")]
+    panels = [FieldPanel("name"), FieldPanel("slug")]
 
-#     class Meta:
-#         ordering = ["name"]
+    class Meta:
+        ordering = ["name"]
 
-# register_snippet(BlogCategory)
+
+register_snippet(BlogCategory)
 
 
 class BlogListPage(RoutablePageMixin, Page):
-
     template = "cms/blog/blog_list_page.html"
     max_count = 1
     intro = RichTextField(blank=True)
@@ -81,50 +79,49 @@ class BlogListPage(RoutablePageMixin, Page):
             posts = paginator.page(1)
         except EmptyPage:
             posts = paginator.page(paginator.num_pages)
-        # context["category_count"] = BlogCategory.objects.annotate(
-        #     num_posts=Count("blogdetailpage")
-        # )
+        context["category_count"] = BlogCategory.objects.annotate(
+            num_posts=models.Count("blogdetailpage")
+        )
         context["posts"] = posts
-        # context["categories"] = BlogCategory.objects.all()
+        context["categories"] = BlogCategory.objects.all()
         if kwargs.get("page_num"):
             return render(request, "cms/blog/blog_list_page.html", context)
         else:
             return context
 
-    # @route(r"^category/(?P<cat_slug>[-\w]*)/$", name="category_view")
-    # def category_view(self, request, cat_slug):
-    #     context = self.get_context(request)
-    #     category = BlogCategory.objects.get(slug=cat_slug)
-    #     category_posts = (
-    #         BlogDetailPage.objects.live().public().filter(category=category)
-    #     )
+    @route(r"^category/(?P<cat_slug>[-\w]*)/$", name="category_view")
+    def category_view(self, request, cat_slug):
+        context = self.get_context(request)
+        category = BlogCategory.objects.get(slug=cat_slug)
+        category_posts = (
+            BlogDetailPage.objects.live().public().filter(category=category)
+        )
 
-    #     paginator = Paginator(category_posts, 10)
+        paginator = Paginator(category_posts, 10)
 
-    #     # page = int(kwargs.get('page_num', 1))
-    #     page = 1
+        page = int(kwargs.get("page_num", 1))
 
-    #     try:
-    #         category_posts = paginator.page(page)
-    #     except PageNotAnInteger:
-    #         category_posts = paginator.page(1)
-    #     except EmptyPage:
-    #         category_posts = paginator.page(paginator.num_pages)
+        try:
+            category_posts = paginator.page(page)
+        except PageNotAnInteger:
+            category_posts = paginator.page(1)
+        except EmptyPage:
+            category_posts = paginator.page(paginator.num_pages)
 
-    #     context["category_posts"] = category_posts
-    #     context["current_category"] = category
-    #     return render(request, "blog/blog_category.html", context)
+        context["category_posts"] = category_posts
+        context["current_category"] = category
+        return render(request, "blog/blog_category.html", context)
 
-    # content_panels = Page.content_panels + [
-    #     FieldPanel("intro", classname="full"),
-    # ]
+    content_panels = Page.content_panels + [
+        FieldPanel("intro", classname="full"),
+    ]
 
 
 class BlogDetailPage(Page):
     template = "cms/blog/blog_detail_page.html"
     excerpt = RichTextField()
-    # show_legend = models.BooleanField(default=False)
-    # category = models.ForeignKey(BlogCategory, null=True, on_delete=models.SET_NULL)
+    show_legend = models.BooleanField(default=False)
+    category = models.ForeignKey(BlogCategory, null=True, on_delete=models.SET_NULL)
 
     content = StreamField(
         [
@@ -139,8 +136,8 @@ class BlogDetailPage(Page):
     )
 
     content_panels = Page.content_panels + [
-        # FieldPanel("category"),
-        # FieldPanel("show_legend"),
+        FieldPanel("category"),
+        FieldPanel("show_legend"),
         FieldPanel("excerpt"),
         FieldPanel("content"),
     ]
@@ -153,8 +150,14 @@ class BlogDetailPage(Page):
 class Menu(ClusterableModel):
     """The main menu clusterable model."""
 
+    SLUG_CHOICES = (
+        ("navbar", "Navbar"),
+        ("footer", "Footer"),
+    )
     title = models.CharField(_("link_title"), max_length=100)
-    slug = AutoSlugField(populate_from="title", editable=True)
+    slug = models.CharField(
+        _("Slug"), max_length=10, choices=SLUG_CHOICES, default="navbar"
+    )
 
     panels = [
         MultiFieldPanel(
@@ -278,6 +281,11 @@ class SiteSettings(BaseSiteSetting):
     github = models.URLField(blank=True, null=True, help_text="Github URL")
     twitter = models.URLField(blank=True, null=True, help_text="Twitter URL")
     linkedin = models.URLField(blank=True, null=True, help_text="linkedin URL")
+    address = models.CharField(
+        blank=True, null=True, help_text="address", max_length=250
+    )
+    phone = models.CharField(blank=True, null=True, help_text="phone", max_length=250)
+    email = models.EmailField(blank=True, null=True, help_text="email", max_length=250)
     sitemap = models.URLField(blank=True, null=True, help_text="Sitemap rss.xml")
     panels = [
         MultiFieldPanel(
@@ -285,6 +293,9 @@ class SiteSettings(BaseSiteSetting):
                 FieldPanel("github"),
                 FieldPanel("twitter"),
                 FieldPanel("linkedin"),
+                FieldPanel("address"),
+                FieldPanel("email"),
+                FieldPanel("phone"),
                 FieldPanel("sitemap"),
                 FieldPanel("logo"),
             ],

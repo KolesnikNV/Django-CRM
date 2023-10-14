@@ -15,8 +15,6 @@ class UserCreation(TestCase):
             first_name="janeEmail@example.com",
             username="jane",
             email="janeEmail@example.com",
-            role="ADMIN",
-            org=self.org,
         )
         self.user.set_password("password")
         self.user.save()

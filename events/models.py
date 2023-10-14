@@ -6,16 +6,14 @@ from common.models import Org, Profile
 from contacts.models import Contact
 from teams.models import Teams
 
-# Create your models here.
-
 
 class Event(models.Model):
     EVENT_TYPE = (
         ("Recurring", "Recurring"),
         ("Non-Recurring", "Non-Recurring"),
-        # ("Call", "Call"),
-        # ('Meeting', 'Meeting'),
-        # ('Task', 'Task')
+        ("Call", "Call"),
+        ("Meeting", "Meeting"),
+        ("Task", "Task"),
     )
     EVENT_STATUS = (
         ("Planned", "Planned"),
@@ -54,7 +52,6 @@ class Event(models.Model):
     teams = models.ManyToManyField(Teams, related_name="event_teams")
     org = models.ForeignKey(Org, on_delete=models.SET_NULL, null=True, blank=True)
 
-    # tags = models.ManyToManyField(Tag)
 
     @property
     def created_on_arrow(self):

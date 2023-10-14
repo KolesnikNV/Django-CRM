@@ -4,40 +4,31 @@ from datetime import timedelta
 from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 load_dotenv()
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ["SECRET_KEY"]
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = True
-
 
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
-
-    'wagtail.contrib.forms',
-    'wagtail.contrib.redirects',
-    'wagtail.embeds',
-    'wagtail.sites',
-    'wagtail.users',
-    'wagtail.snippets',
-    'wagtail.documents',
-    'wagtail.images',
-    'wagtail.search',
-    'wagtail.admin',
-    'wagtail',
-    'cms',
-    'wagtail.contrib.settings',
-    
-
-    'modelcluster',
-    'taggit',
-
+    "wagtail.contrib.forms",
+    "wagtail.contrib.redirects",
+    "wagtail.embeds",
+    "wagtail.sites",
+    "wagtail.users",
+    "wagtail.snippets",
+    "wagtail.documents",
+    "wagtail.images",
+    "wagtail.search",
+    "wagtail.admin",
+    "wagtail",
+    "cms",
+    "wagtail.contrib.settings",
+    "modelcluster",
+    "taggit",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.messages",
@@ -72,11 +63,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    # "common.custom_auth.TokenAuthMiddleware",
     "common.middleware.get_company.GetProfileAndOrg",
-    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
-    'common.middleware.swagger_post.SwaggerMiddleware',
-   
+    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
+    "common.middleware.swagger_post.SwaggerMiddleware",
 ]
 
 ROOT_URLCONF = "crm.urls"
@@ -95,9 +84,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "common.context_processors.common.app_name",
-                # "django_settings_export.settings_export",
-                'wagtail.contrib.settings.context_processors.settings',
-                
+                "wagtail.contrib.settings.context_processors.settings",
             ],
         },
     },
@@ -105,23 +92,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "crm.wsgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ["DBNAME"],
-        "USER": os.environ["DBUSER"],
-        "PASSWORD": os.environ["DBPASSWORD"],
-        "HOST": os.environ["DBHOST"],
-        "PORT": os.environ["DBPORT"],
+        "NAME": os.getenv("POSTGRES_NAME"),
+        "USER": os.getenv("POSTGRES_USER"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        "HOST": "db",
+        "PORT": 5432,
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -138,9 +119,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/1.10/topics/i18n/
-
 
 TIME_ZONE = "Asia/Kolkata"
 
@@ -152,14 +130,11 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 AUTH_USER_MODEL = "common.User"
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 ENV_TYPE = os.environ["ENV_TYPE"]
-print(">>> ENV_TYPE", ENV_TYPE)
 if ENV_TYPE == "dev":
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
     MEDIA_URL = "/media/"
@@ -237,7 +212,7 @@ LOGGING = {
 
 APPLICATION_NAME = "bottlecrm"
 
-WAGTAIL_SITE_NAME = 'bottlecrm'
+WAGTAIL_SITE_NAME = "bottlecrm"
 
 WAGTAILADMIN_BASE_URL = "https://bottlecrm.com"
 
@@ -252,19 +227,12 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
-}
-
-SWAGGER_SETTINGS = {
-    "DEFAULT_INFO": "crm.urls.info",
-    "SECURITY_DEFINITIONS": {
-        "api_key": {"type": "apiKey", "name": "Authorization", "in": "header"},
-    },
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 CORS_ALLOW_HEADERS = default_headers + ("org",)
 CORS_ORIGIN_ALLOW_ALL = True
-CSRF_TRUSTED_ORIGINS = ['https://*.runcode.io', 'http://*']
-
+CSRF_TRUSTED_ORIGINS = ["https://*.runcode.io", "http://*"]
 SECURE_HSTS_SECONDS = 3600
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
@@ -275,11 +243,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
-DOMAIN_NAME = os.getenv("DOMAIN_NAME")
-
 
 SIMPLE_JWT = {
-    #'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
     "ROTATE_REFRESH_TOKENS": False,
@@ -295,10 +260,6 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
 }
-# it is needed in custome middlewere to get the user from the token
 JWT_ALGO = "HS256"
 
-
-DOMAIN_NAME = os.environ["DOMAIN_NAME"]
 SWAGGER_ROOT_URL = os.environ["SWAGGER_ROOT_URL"]
-

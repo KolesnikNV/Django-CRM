@@ -15,7 +15,6 @@ from cases.models import Case
 from cases.serializer import CaseCreateSerializer, CaseSerializer
 from cases.tasks import send_email_to_assigned_user
 from common.models import Attachments, Comment, Profile
-
 # from common.custom_auth import JSONWebTokenAuthentication
 from common.serializer import AttachmentsSerializer, CommentSerializer
 from common.utils import CASE_TYPE, PRIORITY_CHOICE, STATUS_CHOICE

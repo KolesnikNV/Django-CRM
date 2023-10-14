@@ -26,7 +26,6 @@ from teams.models import Teams
 
 
 class OpportunityListView(APIView, LimitOffsetPagination):
-
     # authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
     model = Opportunity

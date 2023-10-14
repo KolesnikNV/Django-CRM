@@ -1,25 +1,18 @@
 import json
-from multiprocessing import context
-from re import template
 
 import requests
 from django.conf import settings
-from django.contrib.auth import authenticate, login
+from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.hashers import make_password
-from django.db import transaction
 from django.db.models import Q
-from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.utils.translation import gettext as _
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.authtoken.models import Token
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -29,18 +22,21 @@ from accounts.models import Account, Contact, Tags
 from accounts.serializer import AccountSerializer
 from cases.models import Case
 from cases.serializer import CaseSerializer
-##from common.custom_auth import JSONWebTokenAuthentication
-from common import serializer, swagger_params
+from common import swagger_params
 from common.models import APISettings, Document, Org, Profile, User
 from common.serializer import *
-from common.serializer import (CreateUserSerializer, PasswordChangeSerializer,
-                               RegisterOrganizationSerializer)
-from common.tasks import (resend_activation_link_to_user,
-                          send_email_to_new_user, send_email_to_reset_password,
-                          send_email_user_delete)
+from common.serializer import (
+    CreateUserSerializer,
+    PasswordChangeSerializer,
+    RegisterOrganizationSerializer,
+)
+from common.tasks import (
+    resend_activation_link_to_user,
+    send_email_to_new_user,
+    send_email_to_reset_password,
+    send_email_user_delete,
+)
 from common.token_generator import account_activation_token
-# from rest_framework_jwt.serializers import jwt_encode_handler
-from common.utils import COUNTRIES, ROLES, jwt_payload_handler
 from contacts.serializer import ContactSerializer
 from leads.models import Lead
 from leads.serializer import LeadSerializer
@@ -51,7 +47,6 @@ from teams.serializer import TeamsSerializer
 
 
 class GetTeamsAndUsersView(APIView):
-
     ##authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
@@ -228,7 +223,6 @@ class ChangePasswordView(APIView):
 
 # check_header not working
 class ApiHomeView(APIView):
-
     ##authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
@@ -280,7 +274,7 @@ class LoginView(APIView):
         manual_parameters=swagger_params.login_page_params,
     )
     def post(self, request):
-        serializer = self.serializer_class(data=request.post_data)  #<------
+        serializer = self.serializer_class(data=request.post_data)  # <------
         serializer.is_valid(raise_exception=True)
         return Response(
             {
@@ -301,21 +295,9 @@ class RegistrationView(APIView):
         manual_parameters=swagger_params.registration_page_params,
     )
     def post(self, request, format=None):
-
         serializer = self.serializer_class(data=request.post_data)
 
-        if serializer.is_valid():
-            user_obj = serializer.save()
-            password = request.post_data.get("password")
-            user_obj.password = make_password(password)
-            user_obj.save()
-            # sending mail for confirm password
-            send_email_to_new_user.delay(
-                user_obj.id,
-            )
-
-            return Response({"error": False, "status": status.HTTP_201_CREATED})
-        else:
+        if not serializer.is_valid():
             return Response(
                 {
                     "error": True,
@@ -323,6 +305,13 @@ class RegistrationView(APIView):
                     "status": status.HTTP_400_BAD_REQUEST,
                 }
             )
+        user_obj = serializer.save()
+        password = request.post_data.get("password")
+        user_obj.password = make_password(password)
+        user_obj.save()
+        # sending mail for confirm password TODO вернуть сюда отпраку на email
+
+        return Response({"error": False, "status": status.HTTP_201_CREATED})
 
 
 class OrgProfileCreateView(APIView):
@@ -405,7 +394,6 @@ class ProfileView(APIView):
 
 
 class UsersListView(APIView, LimitOffsetPagination):
-
     ##authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
@@ -827,7 +815,6 @@ class ForgotPasswordView(APIView):
             }
             return Response(data, status=status.HTTP_200_OK)
         else:
-
             error = serializer.errors.get("non_field_errors")
 
             data = {"error": True, "errors": serializer.errors, "error_text": error[0]}
@@ -1029,9 +1016,10 @@ class DomainDetailView(APIView):
 
 class ActivateUserView(View):
     template = "common/user_activation_status.html"
-    # @swagger_auto_schema(
-    #     tags=["Auth"],
-    # )
+
+    @swagger_auto_schema(
+        tags=["Auth"],
+    )
     def get(self, request, uid, token, activation_key, format=None):
         user = User.objects.get(activation_key=activation_key)
         if user:
@@ -1065,42 +1053,42 @@ class ActivateUserView(View):
                 context = {"success": False, "message": "In Valid Token."}
                 return render(request, self.template, context)
 
-    # def post(self, request, uid, token, activation_key, format=None):
-    #     profile = get_object_or_404(Profile, activation_key=activation_key)
-    #     if profile.user:
-    #         if timezone.now() > profile.key_expires:
-    #             resend_activation_link_to_user.delay(
-    #                 profile.user.email,
-    #             )
-    #             return Response(
-    #                 {
-    #                     "error": False,
-    #                     "message": "Link expired. Please use the Activation link sent now to your mail.",
-    #                 },
-    #                 status=status.HTTP_406_NOT_ACCEPTABLE,
-    #             )
-    #         else:
-    #             try:
-    #                 uid = force_str(urlsafe_base64_decode(uid))
-    #                 user = User.objects.get(pk=uid)
-    #             except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-    #                 user = None
-    #             if user is not None and account_activation_token.check_token(
-    #                 user, token
-    #             ):
-    #                 user.is_active = True
-    #                 user.save()
-    #                 return Response(
-    #                     {
-    #                         "error": False,
-    #                         "message": "Thank you for your email confirmation. Now you can login to your account.",
-    #                     },
-    #                     status=status.HTTP_200_OK,
-    #                 )
-    #             return Response(
-    #                 {"error": True, "errors": "Activation link is invalid!"},
-    #                 status=status.HTTP_400_BAD_REQUEST,
-    #             )
+    def post(self, request, uid, token, activation_key, format=None):
+        profile = get_object_or_404(Profile, activation_key=activation_key)
+        if profile.user:
+            if timezone.now() > profile.key_expires:
+                resend_activation_link_to_user.delay(
+                    profile.user.email,
+                )
+                return Response(
+                    {
+                        "error": False,
+                        "message": "Link expired. Please use the Activation link sent now to your mail.",
+                    },
+                    status=status.HTTP_406_NOT_ACCEPTABLE,
+                )
+            else:
+                try:
+                    uid = force_str(urlsafe_base64_decode(uid))
+                    user = User.objects.get(pk=uid)
+                except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+                    user = None
+                if user is not None and account_activation_token.check_token(
+                    user, token
+                ):
+                    user.is_active = True
+                    user.save()
+                    return Response(
+                        {
+                            "error": False,
+                            "message": "Thank you for your email confirmation. Now you can login to your account.",
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                return Response(
+                    {"error": True, "errors": "Activation link is invalid!"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
 
 class ResendActivationLinkView(APIView):
@@ -1125,26 +1113,23 @@ class ResendActivationLinkView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-# class OrganizationListView(APIView, LimitOffsetPagination):
+class OrganizationListView(APIView, LimitOffsetPagination):
+    # ##authentication_classes = (JSONWebTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
-#     # ##authentication_classes = (JSONWebTokenAuthentication,)
-#     permission_classes = (IsAuthenticated,)
-
-#     @swagger_auto_schema(tags=["Auth"])
-#     def get(self, request):
-#         profiles = Profile.objects.filter(user=request.user, is_active=True)
-#         companies = Org.objects.filter(id__in=profiles.values_list("org", flat=True))
-#         return Response(
-#             {
-#                 "error": False,
-#                 "companies": OrganizationSerializer(companies, many=True).data,
-#             },
-#             status=status.HTTP_200_OK,
-#         )
+    @swagger_auto_schema(tags=["Auth"])
+    def get(self, request):
+        profiles = Profile.objects.filter(user=request.user, is_active=True)
+        companies = Org.objects.filter(id__in=profiles.values_list("org", flat=True))
+        return Response(
+            {
+                "error": False,
+                "companies": OrganizationSerializer(companies, many=True).data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
-# @require_http_methods(["POST"])
-# @csrf_exempt
 class GoogleLoginView(APIView):
     """
     Check for authentication with google
@@ -1153,39 +1138,36 @@ class GoogleLoginView(APIView):
     """
 
     @swagger_auto_schema(
-        tags=["Auth"],
+        description="Login through Google",
+        request=SocialLoginSerializer,
     )
     def post(self, request):
-
-        form = SocialLoginSerializer(data=request.POST)
-        if form.is_valid():
-            params = {"access_token": request.POST.get("accessToken")}
-            url = "https://www.googleapis.com/oauth2/v1/userinfo"
-            kw = dict(params=params, headers={}, timeout=60)
-            response = requests.request("GET", url, **kw)
-            if response.status_code == 200:
-                email_matches = User.objects.filter(email=response.json().get("email"))
-                if email_matches:
-                    user = email_matches.first()
-                    # user = authenticate(email=user.email)
-                    login(request, user)
-
-                    payload = jwt_payload_handler(user)
-                    response_data = {
-                        "token": jwt_encode_handler(payload),
-                        "error": False,
-                        "id": user.id,
-                        "employee_name": user.get_full_name(),
-                    }
-                    return JsonResponse(response_data, status=status.HTTP_200_OK)
-                return JsonResponse(
-                    {"error": True, "message": "Email not valid"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            return JsonResponse(
-                {"error": True, "message": "Email not valid"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        return JsonResponse(
-            {"error": True, "errors": form.errors}, status=status.HTTP_200_OK
+        payload = {"access_token": request.data.get("token")}
+        r = requests.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo", params=payload
         )
+        data = json.loads(r.text)
+        print(data)
+        if "error" in data:
+            content = {
+                "message": "wrong google token / this google token is already expired."
+            }
+            return Response(content)
+        # create user if not exist
+        try:
+            user = User.objects.get(email=data["email"])
+        except User.DoesNotExist:
+            user = User()
+            user.email = data["email"]
+            user.profile_pic = data["picture"]
+            # provider random default password
+            user.password = make_password(BaseUserManager().make_random_password())
+            user.email = data["email"]
+            user.save()
+        token = RefreshToken.for_user(user)
+        response = {}
+        response["username"] = user.email
+        response["access_token"] = str(token.access_token)
+        response["refresh_token"] = str(token)
+        response["user_id"] = user.id
+        return Response(response)

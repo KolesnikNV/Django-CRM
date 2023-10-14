@@ -12,7 +12,6 @@ from common.models import (Address, APISettings, Attachments, Comment,
 
 
 class LoginSealizer(serializers.Serializer):
-
     email = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=128, write_only=True)
     access_token = serializers.CharField(max_length=None, read_only=True)
@@ -23,7 +22,6 @@ class LoginSealizer(serializers.Serializer):
         password = data.get("password", None)
         user = authenticate(email=email, password=password)
         if user:
-
             refresh = RefreshToken.for_user(user)
             access = AccessToken.for_user(user)
             return {
@@ -102,7 +100,6 @@ class RegisterOrganizationSerializer(serializers.ModelSerializer):
         return password
 
     def validate_email(self, email):
-
         if User.objects.filter(email__iexact=email).exists():
             raise serializers.ValidationError("This email is already registered.")
         return email
@@ -395,11 +392,7 @@ class DocumentCreateSerializer(serializers.ModelSerializer):
 
 
 def find_urls(string):
-    # website_regex = "^((http|https)://)?([A-Za-z0-9.-]+\.[A-Za-z]{2,63})?$"  # (http(s)://)google.com or google.com
-    # website_regex = "^https?://([A-Za-z0-9.-]+\.[A-Za-z]{2,63})?$"  # (http(s)://)google.com
-    # http(s)://google.com
     website_regex = "^https?://[A-Za-z0-9.-]+\.[A-Za-z]{2,63}$"
-    # http(s)://google.com:8000
     website_regex_port = "^https?://[A-Za-z0-9.-]+\.[A-Za-z]{2,63}:[0-9]{2,4}$"
     url = re.findall(website_regex, string)
     url_port = re.findall(website_regex_port, string)

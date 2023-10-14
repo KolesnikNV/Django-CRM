@@ -1,8 +1,6 @@
 import json
 
-import pytz
 from django.conf import settings
-from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -22,8 +20,7 @@ from invoices import swagger_params
 from invoices.models import Invoice
 from invoices.serializer import (InvoiceCreateSerializer,
                                  InvoiceHistorySerializer, InvoiceSerailizer)
-from invoices.tasks import (create_invoice_history, send_email,
-                            send_invoice_email, send_invoice_email_cancel)
+from invoices.tasks import create_invoice_history, send_email
 from teams.models import Teams
 from teams.serializer import TeamsSerializer
 
@@ -37,12 +34,11 @@ INVOICE_STATUS = (
 
 
 class InvoiceListView(APIView, LimitOffsetPagination):
-
     # authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
     model = Invoice
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, request, **kwargs):
         params = request.post_data
         queryset = self.model.objects.filter(company=self.request.company)
         accounts = Account.objects.filter(company=self.request.company)

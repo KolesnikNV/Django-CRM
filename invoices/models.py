@@ -155,7 +155,8 @@ class Invoice(models.Model):
 
 class InvoiceHistory(models.Model):
     """Model definition for InvoiceHistory.
-    This model is used to track/keep a record of the updates made to original invoice object."""
+    This model is used to track/keep a record of the updates made to original invoice object.
+    """
 
     INVOICE_STATUS = (
         ("Draft", "Draft"),

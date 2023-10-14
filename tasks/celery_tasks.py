@@ -1,12 +1,8 @@
 from celery import Celery
-from django.conf import settings
 from django.core.mail import EmailMessage
-from django.shortcuts import reverse
 from django.template.loader import render_to_string
 
-from accounts.models import Account, Email
 from common.models import User
-from contacts.models import Contact
 from tasks.models import Task
 
 app = Celery("redis://")
@@ -15,7 +11,6 @@ app = Celery("redis://")
 @app.task
 def send_email(task_id, recipients, domain="demo.django-crm.io", protocol="http"):
     task = Task.objects.filter(id=task_id).first()
-    created_by = task.created_by
     for user in recipients:
         recipients_list = []
         user = User.objects.filter(id=user, is_active=True).first()

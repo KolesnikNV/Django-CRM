@@ -10,13 +10,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from common.models import Attachments, Comment, Profile, User
-
 # from common.custom_auth import JSONWebTokenAuthentication
-from common.serializer import (
-    AttachmentsSerializer,
-    CommentSerializer,
-    ProfileSerializer,
-)
+from common.serializer import (AttachmentsSerializer, CommentSerializer,
+                               ProfileSerializer)
 from contacts.models import Contact
 from contacts.serializer import ContactSerializer
 from events import swagger_params

@@ -32,7 +32,7 @@ class LeadListView(APIView, LimitOffsetPagination):
     # authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, request, **kwargs):
         params = request.post_data
         queryset = (
             self.model.objects.filter(org=self.request.org)

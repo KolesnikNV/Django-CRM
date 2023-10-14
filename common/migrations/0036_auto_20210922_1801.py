@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("events", "0007_rename_company_event_org"),
         ("cases", "0009_rename_company_case_org"),

@@ -9,53 +9,51 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from common.models import Comment, Profile, User
+import crm.settings as settings
+from common.models import Comment, User
 from common.token_generator import account_activation_token
 
-app = Celery("redis://")
+app = Celery(
+    broker="redis://localhost:6379/0",
+)
 
 
 @app.task
 def send_email_to_new_user(user_id):
-
     """Send Mail To Users When their account is created"""
-    user_obj = User.objects.filter(id=user_id).first()
+    if not (user_obj := User.objects.filter(id=user_id).first()):
+        return
+    user_email = user_obj.email
+    context = {
+        "url": settings.DOMAIN_NAME,
+        "uid": (urlsafe_base64_encode(force_bytes(user_obj.pk)),),
+    }
+    context["token"] = account_activation_token.make_token(user_obj)
+    time_delta_two_hours = datetime.datetime.strftime(
+        timezone.now() + datetime.timedelta(hours=2), "%Y-%m-%d-%H-%M-%S"
+    )
+    activation_key = context["token"] + time_delta_two_hours
+    user_obj.activation_key = activation_key
+    user_obj.save()
 
-    if user_obj:
-        context = {}
-        user_email = user_obj.email
-        context["url"] = settings.DOMAIN_NAME
-        context["uid"] = (urlsafe_base64_encode(force_bytes(user_obj.pk)),)
-        context["token"] = account_activation_token.make_token(user_obj)
-        time_delta_two_hours = datetime.datetime.strftime(
-            timezone.now() + datetime.timedelta(hours=2), "%Y-%m-%d-%H-%M-%S"
-        )
-        # creating an activation token and saving it in user model
-        activation_key = context["token"] + time_delta_two_hours
-        user_obj.activation_key = activation_key
-        user_obj.save()
+    context["complete_url"] = (
+        context["url"]
+        + f'/auth/activate-user/{context["uid"][0]}/{context["token"]}/{activation_key}/'
+    )
+    recipients = [
+        user_email,
+    ]
+    subject = "Welcome to Bottle CRM"
+    html_content = render_to_string("user_status_in.html", context=context)
 
-        context["complete_url"] = context[
-            "url"
-        ] + "/auth/activate-user/{}/{}/{}/".format(
-            context["uid"][0],
-            context["token"],
-            activation_key,
-        )
-        recipients = [
-            user_email,
-        ]
-        subject = "Welcome to Bottle CRM"
-        html_content = render_to_string("user_status_in.html", context=context)
-
-        msg = EmailMessage(
-            subject,
-            html_content,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=recipients,
-        )
-        msg.content_subtype = "html"
-        msg.send()
+    msg = EmailMessage(
+        subject,
+        html_content,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=recipients,
+    )
+    msg.content_subtype = "html"
+    msg.send()
 
 
 @app.task
@@ -108,7 +106,6 @@ def send_email_user_mentions(
             context["url"] = settings.DOMAIN_NAME
         else:
             context["url"] = ""
-        # subject = 'Django CRM : comment '
         if recipients:
             for recipient in recipients:
                 recipients_list = [
@@ -212,10 +209,6 @@ def resend_activation_link_to_user(
         )
         context["token"] = context["token"]
         activation_key = context["token"] + time_delta_two_hours
-        # Profile.objects.filter(user=user_obj).update(
-        #     activation_key=activation_key,
-        #     key_expires=timezone.now() + datetime.timedelta(hours=2),
-        # )
         user_obj.activation_key = activation_key
         user_obj.key_expires = timezone.now() + datetime.timedelta(hours=2)
         user_obj.save()

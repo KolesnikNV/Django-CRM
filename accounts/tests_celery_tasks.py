@@ -6,10 +6,9 @@ from django.test.utils import override_settings
 from accounts.models import Email
 from accounts.tasks import (send_email, send_email_to_assigned_user,
                             send_scheduled_emails)
-from accounts.tests import AccountCreateTest
 
 
-class TestCeleryTasks(AccountCreateTest, TestCase):
+class TestCeleryTasks(TestCase):
     @override_settings(
         CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
         CELERY_ALWAYS_EAGER=True,

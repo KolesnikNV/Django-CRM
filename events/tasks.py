@@ -19,7 +19,7 @@ def send_email(event_id, recipients):
     context["event_created_by"] = event.created_by
     context["event_date_of_meeting"] = event.date_of_meeting
     context["url"] = settings.DOMAIN_NAME
-    # recipients = event.assigned_to.filter(is_active=True)
+    recipients = event.assigned_to.filter(is_active=True)
     for profile_id in recipients:
         recipients_list = []
         profile = Profile.objects.filter(id=profile_id, is_active=True).first()

@@ -11,7 +11,6 @@ def generate_document_status(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("common", "0004_attachments_case"),
     ]

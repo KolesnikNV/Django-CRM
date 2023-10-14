@@ -11,8 +11,6 @@ from rest_framework.views import APIView
 from accounts.models import Account
 from accounts.serializer import AccountSerializer
 from common.models import Attachments, Comment, Profile
-
-# from common.custom_auth import JSONWebTokenAuthentication
 from common.serializer import (
     AttachmentsSerializer,
     CommentSerializer,

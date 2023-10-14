@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("common", "0021_document_company"),
         ("opportunity", "0004_opportunity_teams"),

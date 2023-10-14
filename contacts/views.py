@@ -27,7 +27,7 @@ class ContactsListView(APIView, LimitOffsetPagination):
     permission_classes = (IsAuthenticated,)
     model = Contact
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, request, **kwargs):
         params = request.post_data
         queryset = self.model.objects.filter(org=self.request.org).order_by("-id")
         if self.request.profile.role != "ADMIN" and not self.request.profile.is_admin:

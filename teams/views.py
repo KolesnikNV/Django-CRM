@@ -1,8 +1,6 @@
 import json
 
 from drf_yasg.utils import swagger_auto_schema
-
-# from common.custom_auth import JSONWebTokenAuthentication
 from rest_framework import status
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
